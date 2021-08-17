@@ -4,7 +4,6 @@ import { useStateValue } from "../StateProvider";
 //importing styles
 import "emoji-mart/css/emoji-mart.css";
 import "./ChatFooter.css";
-import { generateId } from "../utils";
 
 function ChatFooter({ roomName, roomId, db, firebase, storage, rec_id }) {
   const [{ user }] = useStateValue();
@@ -16,7 +15,7 @@ function ChatFooter({ roomName, roomId, db, firebase, storage, rec_id }) {
     if (e.keyCode == 13 && e.shiftKey == false) {
       e.preventDefault()
 
-      if (roomId) {
+      if (roomId && input.trim() != "") {
         db.collection("chat")
         .doc(roomId)
         .collection("messages")

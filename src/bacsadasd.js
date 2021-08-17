@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 //importing firebase
 import db from "./firebase";
-import { auth, firebase, realDB } from "./firebase";
+import { auth, firebase } from "./firebase";
 //importing actions
 import { setUser } from "./actions/userAction";
 //importing components
@@ -35,31 +35,49 @@ function App() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
       if (authUser) {
+        console.log(authUser.uid);
         dispatch(setUser(authUser));
         setLoading(true);
-          let RTDBref = realDB.ref("/userOnlineSet");
-          RTDBref.on('value', snapshot => {
 
-          RTDBref
-            .onDisconnect() // Set up the disconnect hook
-            .update({[authUser.uid]:"offline"}) // The value to be set for this key when the client disconnects
-            .then(() => {
-                // Set the Firestore User's online status to true
-                db.collection("users")
-                  .doc(authUser.uid)
-                  .update({
-                    online: true,
-                  });
-                // Let's also create a key in our real-time database
-                // The value is set to 'online'
-                RTDBref.update({[authUser.uid]:"online"});
+
+        
+
+
+        getUsers(authUser);
+
+        if (authUser.isAnonymous === true && authUser.displayName === null) {
+          var anonymousName =
+            "Anonymous" + " " + Math.floor(Math.random() * 1000000);
+
+          auth.currentUser.updateProfile({
+            displayName: anonymousName,
+            photoURL: "",
+          });
+
+          db.collection("users")
+            .doc(authUser.uid)
+            .set({
+              name: anonymousName,
+              about: "Hey there! I am using WhatsApp.",
+              photoURL: "",
+              role: "anonymous",
+              dateJoined: firebase.firestore.FieldValue.serverTimestamp(),
+            })
+            .then(function () {
+              console.log("Document successfully updated!");
+            })
+            .catch(function (error) {
+              // The document probably doesn't exist.
+              console.error("Error updating document: ", error);
             });
-        });
+        }
+
         if (
           authUser.uid &&
           authUser.isAnonymous === false &&
           authUser.photoURL !== null
         ) {
+          alert("dek");
           const errorAbout = "errorAbout";
           db.collection("users")
             .doc(authUser.uid)
@@ -73,12 +91,12 @@ function App() {
                   about: "Hey there! I am using WhatsApp.",
                   photoURL: user.photoURL,
                   role: "regular",
-                  online: true,
                   dateJoined: firebase.firestore.FieldValue.serverTimestamp(),
                 });
               }
             })
             .catch(function (error) {
+              console.log();
               toastInfo(`${error}`, errorAbout, "top-center");
             });
         } else if (
@@ -99,7 +117,6 @@ function App() {
                   about: "Hey there! I am using WhatsApp.",
                   photoURL: "",
                   role: "regular",
-                  online: true,
                   dateJoined: firebase.firestore.FieldValue.serverTimestamp(),
                 });
               }
@@ -113,35 +130,28 @@ function App() {
         setLoading(true);
       }
     });
-  }, [dispatch,user]);
 
-  useEffect(() => {
-      const unsubscribe = auth.onAuthStateChanged((authUser) => {
-        if(authUser)
-        {
-          getUsers(authUser);
-        }
-      });
-  }, [])
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
-  function getUsers(authuser) {
-    
-    db.collection("users")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((element) => {
+
+
+  function getUsers(authuser){
+    db.collection("users").get().then((querySnapshot) => {
+      querySnapshot.forEach(element => {
           var data = element.data();
           data.id = element.id;
           console.log(data);
-          if (element.id != authuser.uid ) {
-            setUsers((arr) => [...arr, data]);
+          if(element.id != authuser.uid){
+            setUsers(arr => [...arr , data]);
           }
-        });
       });
+  })
   }
+
   return (
-
-
     <div className={`app ${loading === false && "app-no-bg"}`}>
       {loading ? (
         <>

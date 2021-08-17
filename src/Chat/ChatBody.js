@@ -34,8 +34,9 @@ function ChatBody({
         });
    }
    if(messages.length>0){
-
-   if(user.uid == messages[0].receiver_id){
+    let lastIndex = messages.length;
+    // console.log(messages[lastIndex-1]);
+   if(user.uid == messages[lastIndex-1].receiver_id){
      MsgRead();
    }
   }

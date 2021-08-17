@@ -30,8 +30,6 @@ function Sidebar({ rooms, setIsRoomExist, isRoomExist }) {
   const [drawerLeft, setDrawerLeft] = useState(false);
   const [menuSidebar, setMenuSidebar] = useState(null);
 
-  
-
   const handleDrawerLeftOpen = () => {
     setMenuSidebar(null);
     setDrawerLeft(true);
@@ -72,6 +70,7 @@ function Sidebar({ rooms, setIsRoomExist, isRoomExist }) {
           console.log("error deleting anonymous user", error);
         });
     } else {
+      history.push("/");
       auth.signOut();
     }
   };
@@ -142,8 +141,7 @@ function Sidebar({ rooms, setIsRoomExist, isRoomExist }) {
         setSearch={setSearch}
         placeholder="Search or start new chat"
       />
-
-          <div className="sidebar__chats">
+    {rooms ? (  <div className="sidebar__chats">
                   {loading ? (
                   <div className="sidebar__chatsContainer_loading">
                       <div>
@@ -163,12 +161,13 @@ function Sidebar({ rooms, setIsRoomExist, isRoomExist }) {
               </>
             )}
 
-        {noRooms && loading ? (
+        {!rooms && loading ? (
           <div className="sidebar__chatsContainer_empty">
             <span>No chats</span>
           </div>
         ) : null}
-      </div>
+      </div>):(<></>)}
+        
     </div>
   );
 }
